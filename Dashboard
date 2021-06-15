@@ -1,0 +1,363 @@
+---
+title: "indicadores"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: columns
+    vertical_layout: fill
+    theme: journal
+---
+
+```{r setup, include=FALSE}
+library(flexdashboard)
+```
+
+```{r}
+library(dplyr)
+library(ggplot2)
+library(knitr)
+library(plotrix)
+library(sparklyr)
+setwd("C:/Users/Anahi/Documents/USAR/PROYECTO")
+load("bd_proyecto.RData")
+```
+# Indicador 1
+Column {data-width=600}
+-------------------------------------
+###Porcentaje ninos y adolecentes segun su situacion laboral por departamento y area 
+```{r}
+tab1<-bdt %>% group_by(depto,area) %>% summarise(no_trabaja=(mean(condicion_laboral=="Sin actividad laboral o trabajo")*100),trabaja=(mean(condicion_laboral=="Con actividad laboral o trabajo")*100))
+t1<-tab1
+t1[,c(3:4)]<-round(t1[,c(3:4)],2)
+names(t1)<-c("Departamento","Area","% No Trabajan","% Trabajan")
+kable(t1,caption = "tabla 1")
+```
+
+Column {.tabset}
+-------------------------------------
+###TRABAJAN
+```{r}
+ggplot(tab1,aes(y=area,x=trabaja)) +
+  geom_bar(stat="identity", fill="skyblue3", alpha=.6, width=.4) +
+  coord_flip() +xlim(c(0,100)) +xlab("")+
+  theme_light()+facet_wrap(~depto)+ylab("%")+ggtitle("Grafico 1.1")
+```
+
+###NO TRABAJAN
+```{r}
+ggplot(tab1,aes(y=area,x=no_trabaja)) +
+  geom_bar(stat="identity", fill="green4", alpha=.6, width=.4) +coord_flip() +xlim(c(0,100)) +xlab("") + 
+  theme_light()+facet_wrap(~depto)+ylab("%")+ggtitle("Grafico 1.2")
+```
+
+
+
+# Indicador 2
+Column {data-width=600}
+-------------------------------------
+###Porcentaje por sexo de ninos y adolecentes por departamento y area que trabajan
+```{r}
+tab2<-bdtr %>% group_by(depto,area) %>% summarise(MUJERES=mean(sexo=="2.MUJER")*100,HOMBRES=mean(sexo=="1.HOMBRE")*100)
+t2<-tab2
+t2[,c(3:4)]<-round(t2[,c(3:4)],2)
+names(t2)<-c("Departamento","Area","% Mujeres","% Hombres")
+kable(t2,caption = "tabla 2")
+```
+
+ Column {.tabset}
+-------------------------------------
+###MUJERES
+```{r}
+ggplot(tab2,aes(y=area,x=MUJERES)) +
+  geom_bar(stat="identity", fill="plum4", alpha=.6, width=.4) +
+  coord_flip() +xlim(c(0,100)) +xlab("")+
+  theme_light()+facet_wrap(~depto)+ylab("%")+ggtitle("Grafico 2.1")
+```
+
+###HOMBRES
+```{r}
+ggplot(tab2,aes(y=area,x=HOMBRES)) +
+  geom_bar(stat="identity", fill="turquoise4", alpha=.6, width=.4) +coord_flip() +xlim(c(0,100)) +xlab("") + 
+  theme_light()+facet_wrap(~depto)+ylab("%")+ggtitle("Grafico 2.2")
+```
+
+# Indicador 3
+Column {data-width=600}
+-------------------------------------
+###Porcentaje de ninos y adolecentes se encuentran trabajando y estudiando por departamento y area
+```{r}
+t3<-bdtr %>% group_by(depto,area) %>% 
+  summarise(no_estudia=(mean(estudia=="2.No")*100),
+            estudia=(mean(estudia=="1.Si")*100))
+w1<-t3
+w1[,c(3:4)]<-round(w1[,c(3:4)],2)
+names(w1)<-c("Departamento","Area","% No estudian","% Estudian")
+kable(w1, caption = "tabla 3")
+```
+
+ Column {.tabset}
+-------------------------------------
+###ESTUDIAN
+```{r}
+ggplot(t3,aes(y=area,x=estudia)) +
+  geom_bar(stat="identity", fill="mediumpurple2", alpha=.6, width=.4) +coord_flip() +xlim(c(0,100)) +xlab("") + 
+  theme_light()+facet_wrap(~depto)+ylab("%")+ggtitle("Grafico 3.1")
+```
+
+###NO ESTUDIAN
+```{r}
+ggplot(t3,aes(y=area,x=no_estudia)) +
+  geom_bar(stat="identity", fill="mediumpurple4", alpha=.6, width=.4) +coord_flip() +xlim(c(0,100)) +xlab("") + 
+  theme_light()+facet_wrap(~depto)+ylab("%")+ggtitle("Grafico 3.2")
+```
+
+# Indicador 4
+ Column {.tabset}
+-------------------------------------
+###URABANO
+
+```{r}
+t4<-bdtr%>% group_by(turno_colegio) %>% 
+  summarise(URBANO=(mean(area=="Urbano")*100),
+            RURAL=(mean(area=="Rural")*100))
+t4<-t4[1:4,]
+ggplot(t4,aes(y=turno_colegio,x=URBANO)) +
+  geom_bar(stat="identity", fill="springgreen4", alpha=.6, width=.4) +coord_flip() +xlim(c(0,100)) +xlab("") + 
+  theme_light()+ylab("%")+ggtitle("Grafico 4.1")
+```
+
+###RURAL
+
+```{r}
+ggplot(t4,aes(y=turno_colegio,x=RURAL)) +
+  geom_bar(stat="identity", fill="plum4", alpha=.6, width=.4) +coord_flip() +xlim(c(0,100)) +xlab("") + 
+  theme_light()+ylab("%")+ggtitle("Grafico 4.2")
+
+```
+
+Column {data-width=600}
+-------------------------------------
+
+###Porcentaje de ninos y adolecentes por el turno en el que estudian segun el area
+```{r}
+w4<-t4
+w4[,c(2:3)]<-round(w4[,c(2:3)],2)
+names(w4)<-c("Turno del colegio","% Area Urbana","% Area Rural")
+kable(w4,caption = "tabla 4")
+```
+
+# Indicador 5
+ Column {data-width=600}
+-------------------------------------
+###RAZON POR LA QUE TRABAJAN
+```{r}
+q1<-razon %>% group_by(depto) %>% summarise(
+  ingresos_propios=(mean(razon1=="1. Para generar ingresos propios",na.rm=T)*100),
+  ingresos_hogar=(mean(razon1=="2. Para ayudar/ complementar los ingresos del hogar",na.rm=T)*100),
+  experiencia=(mean(razon1=="3. Para aprender y tener experiencia y habilidades",na.rm=T)*100))
+w5<-q1
+w5[,c(2:4)]<-round(w5[,c(2:4)],2)
+names(w5)<-c("Departamento","Ingresos Propios","Ingresos para el hogar","Ganar Experiencia")
+kable(w5,caption = "Porcentaje de ni�os y jovenes que trabajan por departamento segun la razon por la que trabajan")
+```
+
+ Column {.tabset}
+-------------------------------------
+###INGRESOS PROPIOS
+```{r}
+t5<-razon %>% group_by(razon1) %>% count(depto)
+q1<-t5 %>% filter(razon1=="1. Para generar ingresos propios") 
+q2<-t5 %>% filter(razon1=="2. Para ayudar/ complementar los ingresos del hogar")
+q3<-t5 %>% filter(razon1=="3. Para aprender y tener experiencia y habilidades")
+pie3D(q1$n,labels = q1$depto,explode=0.05)
+```
+
+###INGRESOS DEL HOGAR
+```{r}
+pie3D(q2$n,labels = q1$depto,explode=0.05)
+```
+
+###EXPERIENCIA
+```{r}
+pie3D(q3$n,labels = q1$depto,explode=0.05)
+```
+
+# Indicador 6
+
+ Column {data-width=600}
+-------------------------------------
+
+###MEDIA DE LAS HORAS TRABAJADAS DURANTE TODA LA SEMANA SEGUN LA EDAD
+```{r}
+t6<-bdt %>% group_by(edad) %>% summarise(media_horas=mean(horas_trabajadas,na.rm=T))
+w6<-t6
+w6[,2]<-round(w6[,2],0)
+names(w6)<-c("Departamento","Edad","Promedio de horas que trabajan")
+kable(w6,caption = "tabla 6")
+```
+
+ Column {data-width=600}
+-------------------------------------
+
+###GRAFICO
+
+```{r}
+ggplot(t6,aes(x=edad,y=media_horas))+
+  geom_point(colour="red", fill = "white", size = 4)+theme_minimal()+
+  ylab("horas de trabajo")
+```
+
+# Indicador 7
+Row
+-------------------------------------
+###Porcentaje de ninos segun su horario de trabajo
+```{r}
+bdn<-bdtr %>% filter(edad<12) %>% group_by(edad) %>% 
+  summarise(diurno=(mean(horario_trabajo=="Actividad laboral o trabajo en turno diurno",na.rm=T)*100),nocturno_mixto=mean(horario_trabajo=="Actividad laboral o trabajo en turno nocturno o mixto",na.rm=T)*100)
+bn<-bdn
+bn[,c(2:3)]<-round(bn[,c(2:3)],2)
+names(bn)<-c("Edad","Horario Diurno","Horario nocturno o mixto")
+kable(bn,caption = "tabla 7.1")
+```
+
+###Porcentaje de adolecentes segun el horario de trabajo
+```{r}
+bdj<-bdtr %>% filter(edad>=12) %>% group_by(edad) %>% 
+  summarise(diurno=(mean(horario_trabajo=="Actividad laboral o trabajo en turno diurno",na.rm=T)*100),nocturno_mixto=mean(horario_trabajo=="Actividad laboral o trabajo en turno nocturno o mixto",na.rm=T)*100)
+bj<-bdj
+bj[,c(2:3)]<-round(bj[,c(2:3)],2)
+names(bj)<-c("Edad","Horario Diurno","Horario nocturno o mixto")
+kable(bj,caption = "tabla 7.2")
+
+```
+
+ Column {.tabset}
+-------------------------------------
+###NINOS H.DIURNO
+```{r}
+ggplot(bdn,aes(x=edad, y=diurno)) +
+  geom_segment( aes(xend=edad, yend=0)) +
+  geom_point( size=4, color="coral1") +
+  theme_bw() +
+  xlab("Grupos de edad")+ylab("Porcentaje %")+ggtitle("Grafico 7.1")
+```
+
+###NINOS H.NOCTURNO
+```{r}
+ggplot(bdn,aes(x=edad, y=nocturno_mixto)) +
+  geom_segment( aes(xend=edad, yend=0)) +
+  geom_point( size=4, color="green") +
+  theme_bw() +
+  xlab("Grupos de edad")+ylab("Porcentaje %")+ggtitle("Grafico 7.2")
+
+```
+
+###ADOLECENTES H.DIURNO
+```{r}
+ggplot(bdj,aes(x=edad, y=diurno)) +
+  geom_segment( aes(xend=edad, yend=0)) +
+  geom_point( size=4, color="cyan") +
+  theme_bw() +
+  xlab("Grupos de edad")+ylab("Porcentaje %")+ggtitle("Grafico 7.3")
+
+```
+
+###ADOLECENTES H.NOCTURNO
+```{r}
+ggplot(bdj,aes(x=edad, y=nocturno_mixto)) +
+  geom_segment( aes(xend=edad, yend=0)) +
+  geom_point( size=4, color="brown1") +
+  theme_bw() +
+  xlab("Grupos de edad")+ylab("Porcentaje %")+ggtitle("Grafico 7.4")
+```
+
+
+# Indicador 8
+Row
+-------------------------------------
+###Promedio de horas semanales que realizan tareas domesticas de ninos por sexo
+```{r}
+t8<-bdt %>% filter(edad<12)%>%  group_by(sexo) %>% summarise(hora1=mean(tareas_domesticas,na.rm=T))
+w8<-t8
+w8[,c(2)]<-round(w8[,c(2)],0)
+names(w8)<-c("Sexo","Hora promedio")
+kable(w8,caption = "tabla 8.1")
+```
+
+###Promedio de horas semanales que realizan tareas domesticas de adolecentes por sexo
+```{r}
+t9<-bdt %>% filter(edad>=12)%>%  group_by(sexo) %>% summarise(hora2=mean(tareas_domesticas,na.rm=T))
+w9<-t9
+w9[,(2)]<-round(w9[,(2)],0)
+names(w9)<-c("Sexo","Hora promedio")
+kable(w9,caption = "tabla 8.2")
+```
+
+Row
+-------------------------------------
+###Promedio de horas semanales que realizan tareas domesticas de ninos por sexo
+```{r}
+ggplot(t8,aes(y=sexo,x=hora1)) +
+  geom_bar(stat="identity", fill="magenta1", alpha=.6, width=.4) +coord_flip() +xlab("") + 
+  theme_light()+ylab("%")+ggtitle("Grafico 8.1")
+```
+
+###Promedio de horas semanales que realizan tareas domesticas de adolecentes por sexo
+```{r}
+ggplot(t9,aes(y=sexo,x=hora2)) +
+  geom_bar(stat="identity", fill="purple", alpha=.6, width=.4) +coord_flip()+xlab("") + 
+  theme_light()+ylab("%")+ggtitle("Grafico 8.2")
+```
+
+# Indicador 9
+ Column {.tabset}
+-------------------------------------
+###NINOS (TABLA)
+```{r}
+sc <- spark_connect(master = "local")
+sp_bdtr<-copy_to(sc,bdtr)
+t10<-sp_bdtr %>% filter(edad<12)%>%   group_by(tipo_trabajo) %>% summarise(edad=(mean(edad,na.rm=T)))
+kable(t10,caption="promedio de edad de los ni�os segun el trabajo que realizan")
+
+```
+
+###NINOS GRAFICA
+```{r}
+ggplot(t10,aes(tipo_trabajo,edad))+geom_point(size=3, color="pink2")+coord_flip()+ylab("Edad")+xlab("tipo de trabajo")+ggtitle("Grafico 9.1")
+```
+
+
+###ADOLECENTES TABLA
+```{r}
+t11<-sp_bdtr %>% filter(edad>=12)%>%   group_by(tipo_trabajo) %>% summarise(edad=(mean(edad,na.rm=T)))
+kable(t11,caption="promedio de edad de los jovenes segun el trabajo que realizan")
+
+```
+
+
+###ADOLECENTES GRAFICA
+```{r}
+ggplot(t11,aes(tipo_trabajo,edad))+geom_point(size=3, color="pink2")+coord_flip()+ylab("Edad")+xlab("tipo de trabajo")+ggtitle("Grafico 9.2")
+```
+
+
+# Indicador 10
+
+ Column {.tabset}
+-------------------------------------
+###TABLA
+```{r}
+t11<-sp_bdtr %>%  group_by(depto,deacuerdo_trabajo) %>% summarise(edad=(mean(horas_trabajadas,na.rm=T)))
+kable(t11,caption = "promedio de edad por departamento segun se encuentren de acuerdo o no con el trabajo que realizan")
+
+```
+
+
+###GRAFICO
+
+```{r}
+ggplot(t11,aes(x=deacuerdo_trabajo,y=edad))+geom_point(alpha=1/5, colour = "orange", fill = "white", size = 5)+theme_classic()+xlab("estas de acuerdo con el trabajo")+ylab("edad promedio")+ggtitle("Grafico 10.1")
+```
+
+
+
+
