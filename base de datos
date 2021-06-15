@@ -1,0 +1,121 @@
+rm(list=ls())
+setwd("C:/Users/Anahi/Documents/USAR/PROYECTO")
+dir()
+library(foreign)
+library(dplyr)
+###leyendo
+bd<-read.spss("ENNA_2019.sav",to.data.frame = T)
+class(bd)
+###seleccion de las variables de interes
+
+bdt<-bd %>% select(folio,depto,area,ns001a_02,ns001a_03,ns01a_01,ns01a_03,
+                   ns02b_11a1,catactlab_pd4,htot_op,ns02b_19a,ns02b_19b,ns02b_20,
+                   ns02d_38a,ns02d_38b,ns02d_38c,condac,htot_tdh)
+names(bdt)[c(4:18)]<-c("sexo","edad","estudia","turno_colegio","tipo_trabajo",
+                       "horario_trabajo","horas_trabajadas","razon1","razon2",
+                       "deacuerdo_trabajo","situacion_1","situacion_2",
+                       "situacion_3","condicion_laboral","tareas_domesticas")             
+View(bdt)
+###--- limpieando la base de datos
+for(i in 1:10372)
+{
+  if(bdt$area[i]==1)
+  {
+    bdt$area[i]<-"Urbano"
+  }else
+  {
+    bdt$area[i]<-"Rural"
+  }
+  
+}
+
+for(i in 1:10372)
+{
+  if(bdt$depto[i]==1)
+  {
+    bdt$depto[i]<-"Chuquisaca"
+  }
+}
+for(i in 1:10372)
+{
+  if(bdt$depto[i]==2)
+  {
+    bdt$depto[i]<-"La Paz"
+  }
+}
+for(i in 1:10372)
+{
+  if(bdt$depto[i]==3)
+  {
+    bdt$depto[i]<-"Cochabamba"
+  }
+}
+for(i in 1:10372)
+{
+  if(bdt$depto[i]==4)
+  {
+    bdt$depto[i]<-"Oruro"
+  }
+}
+for(i in 1:10372)
+{
+  if(bdt$depto[i]==5)
+  {
+    bdt$depto[i]<-"Potosi"
+  }
+}
+for(i in 1:10372)
+{
+  if(bdt$depto[i]==6)
+  {
+    bdt$depto[i]<-"Tarija"
+  }
+}
+for(i in 1:10372)
+{
+  if(bdt$depto[i]==7)
+  {
+    bdt$depto[i]<-"Santa Cruz"
+  }
+}
+for(i in 1:10372)
+{
+  if(bdt$depto[i]==8)
+  {
+    bdt$depto[i]<-"Beni"
+  }
+}
+for(i in 1:10372)
+{
+  if(bdt$depto[i]==9)
+  {
+    bdt$depto[i]<-"Pando"
+  }
+}
+bdtr<-bdt %>% filter(condicion_laboral=="Con actividad laboral o trabajo")
+
+datoslimpios=na.omit(bdtr)
+
+moda= getmode<-function(x){
+  uniqx<-unique(x)
+  uniqx[which.max(tabulate(match(x,uniqx)))]
+}
+modahor<-moda(bdtr$horario_trabajo)
+bdtr$horario_trabajo[is.na(bdtr$horario_trabajo)]=modahor
+sum(is.na(bdtr$horario_trabajo))
+
+modada<-moda(bdtr$deacuerdo_trabajo)
+bdtr$deacuerdo_trabajo[is.na(bdtr$deacuerdo_trabajo)]=modada
+sum(is.na(bdtr$deacuerdo_trabajo))
+
+r1<-bdtr %>% select(folio,depto,area,razon1)
+r2<-bdtr %>% select(folio,depto,area,razon2)
+r2<-r2 %>% rename(razon1=razon2)
+razon<-bind_rows(r1,r2)
+View(razon)
+
+setwd("C:/Users/Anahi/Documents/USAR/PROYECTO")
+save(bdt,bdtr,razon,file = "bd_proyecto.RData")
+
+
+
